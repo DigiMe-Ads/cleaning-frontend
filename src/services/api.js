@@ -45,6 +45,18 @@ export const bookingsAPI = {
   getMyBookings: () => api.get('/bookings/my-bookings'),
   getAllBookings: () => api.get('/bookings'),
   getByDate: (date) => api.get(`/bookings/by-date?date=${date}`),
+  getMyAssignments: () => api.get('/bookings/my-assignments'),
+  getMyAssignmentsByDate: (date) => api.get(`/bookings/my-assignments/by-date?date=${date}`),
   update: (id, data) => api.patch(`/bookings/${id}`, data),
+  updateCleaningStatus: (id, cleaning_status) => api.patch(`/bookings/${id}/cleaning-status`, { cleaning_status }),
   delete: (id) => api.delete(`/bookings/${id}`),
+};
+
+// Users / Cleaners
+export const usersAPI = {
+  createCleaner: (data) => api.post('/users/create-cleaner', data),
+  getCleaners: () => api.get('/users/cleaners'),
+  updateCleaner: (id, data) => api.patch(`/users/cleaners/${id}`, data),
+  updateCleanerPassword: (id, password) => api.patch(`/users/cleaners/${id}/password`, { password }),
+  deleteCleaner: (id) => api.delete(`/users/cleaners/${id}`),
 };

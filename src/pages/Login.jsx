@@ -20,7 +20,11 @@ const Login = () => {
     try {
       const user = await login(form.email, form.password);
       toast.success(`Welcome back, ${user.name}!`);
-      navigate(user.role === 'admin' ? '/admin' : '/client');
+      navigate(
+        user.role === 'admin' ? '/admin' :
+        user.role === 'cleaner' ? '/cleaner' :
+        '/client'
+      );
     } catch (err) {
       toast.error(err.response?.data?.message || 'Invalid credentials');
     } finally {

@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import {
   LayoutDashboard, Building2, CalendarDays,
-  LogOut, Home, Menu, X, Bell
+  LogOut, Home, Menu, X, Users
 } from 'lucide-react';
 
 const Layout = ({ children }) => {
@@ -14,6 +14,7 @@ const Layout = ({ children }) => {
   const adminLinks = [
     { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/admin/calendar', label: 'Calendar', icon: CalendarDays },
+    { to: '/admin/cleaners', label: 'Cleaners', icon: Users },
   ];
 
   const clientLinks = [
@@ -21,7 +22,16 @@ const Layout = ({ children }) => {
     { to: '/client/properties', label: 'Properties', icon: Building2 },
   ];
 
-  const links = user?.role === 'admin' ? adminLinks : clientLinks;
+  const cleanerLinks = [
+    { to: '/cleaner', label: 'Dashboard', icon: LayoutDashboard },
+    { to: '/cleaner/calendar', label: 'My Schedule', icon: CalendarDays },
+  ];
+
+  const links = user?.role === 'admin'
+    ? adminLinks
+    : user?.role === 'cleaner'
+    ? cleanerLinks
+    : clientLinks;
 
   const handleLogout = () => {
     logout();
@@ -30,7 +40,6 @@ const Layout = ({ children }) => {
 
   const SidebarContent = () => (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {/* Logo */}
       <div style={{ padding: '28px 20px 20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div style={{
@@ -56,10 +65,8 @@ const Layout = ({ children }) => {
         </div>
       </div>
 
-      {/* Divider */}
       <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '0 20px' }} />
 
-      {/* Nav */}
       <nav style={{ padding: '16px 12px', flex: 1 }}>
         <p style={{
           fontSize: '10px', fontWeight: '600',
@@ -67,7 +74,7 @@ const Layout = ({ children }) => {
           color: 'rgba(255,255,255,0.25)',
           padding: '0 10px', marginBottom: '6px',
         }}>
-          {user?.role === 'admin' ? 'Management' : 'My Portal'}
+          {user?.role === 'admin' ? 'Management' : user?.role === 'cleaner' ? 'My Work' : 'My Portal'}
         </p>
         {links.map(({ to, label, icon: Icon }) => (
           <NavLink
@@ -88,7 +95,6 @@ const Layout = ({ children }) => {
               color: isActive ? 'white' : 'rgba(255,255,255,0.5)',
               borderLeft: isActive ? '3px solid var(--amber)' : '3px solid transparent',
               transition: 'all 0.2s ease',
-              boxShadow: isActive ? 'inset 0 1px 0 rgba(255,255,255,0.05)' : 'none',
             })}
           >
             {({ isActive }) => (
@@ -101,10 +107,8 @@ const Layout = ({ children }) => {
         ))}
       </nav>
 
-      {/* Divider */}
       <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '0 20px' }} />
 
-      {/* User */}
       <div style={{ padding: '16px 12px' }}>
         <div style={{
           display: 'flex', alignItems: 'center', gap: '10px',
@@ -153,12 +157,10 @@ const Layout = ({ children }) => {
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: 'var(--cream)' }}>
 
-      {/* Mobile overlay */}
       {sidebarOpen && (
         <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />
       )}
 
-      {/* Sidebar — desktop */}
       <aside style={{
         width: '240px', minWidth: '240px',
         background: 'linear-gradient(180deg, var(--espresso) 0%, var(--mahogany) 100%)',
@@ -168,13 +170,10 @@ const Layout = ({ children }) => {
         position: 'relative',
         zIndex: 10,
         boxShadow: '4px 0 24px rgba(28,20,16,0.15)',
-      }}
-        className="desktop-sidebar"
-      >
+      }} className="desktop-sidebar">
         <SidebarContent />
       </aside>
 
-      {/* Sidebar — mobile drawer */}
       <aside style={{
         position: 'fixed',
         left: sidebarOpen ? 0 : '-260px',
@@ -204,10 +203,7 @@ const Layout = ({ children }) => {
         <SidebarContent />
       </aside>
 
-      {/* Main */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
-
-        {/* Top bar */}
         <header style={{
           height: '64px', flexShrink: 0,
           background: 'var(--ivory)',
@@ -218,7 +214,6 @@ const Layout = ({ children }) => {
           boxShadow: 'var(--shadow-sm)',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            {/* Mobile menu button */}
             <button
               onClick={() => setSidebarOpen(true)}
               className="mobile-menu-btn"
@@ -236,10 +231,7 @@ const Layout = ({ children }) => {
               <Menu size={18} />
             </button>
             <div>
-              <p style={{
-                fontSize: '13px', color: 'var(--warm-300)',
-                fontWeight: '400',
-              }}>
+              <p style={{ fontSize: '13px', color: 'var(--warm-300)', fontWeight: '400' }}>
                 {new Date().toLocaleDateString('en-US', {
                   weekday: 'long', year: 'numeric',
                   month: 'long', day: 'numeric'
@@ -253,24 +245,32 @@ const Layout = ({ children }) => {
               padding: '6px 14px',
               background: user?.role === 'admin'
                 ? 'linear-gradient(135deg, rgba(196,98,45,0.12), rgba(232,146,74,0.08))'
+                : user?.role === 'cleaner'
+                ? 'linear-gradient(135deg, rgba(45,106,143,0.12), rgba(45,106,143,0.06))'
                 : 'linear-gradient(135deg, rgba(74,124,89,0.12), rgba(74,124,89,0.06))',
-              border: `1px solid ${user?.role === 'admin' ? 'rgba(196,98,45,0.2)' : 'rgba(74,124,89,0.2)'}`,
+              border: `1px solid ${user?.role === 'admin'
+                ? 'rgba(196,98,45,0.2)'
+                : user?.role === 'cleaner'
+                ? 'rgba(45,106,143,0.2)'
+                : 'rgba(74,124,89,0.2)'}`,
               borderRadius: '99px',
               fontSize: '12px', fontWeight: '500',
-              color: user?.role === 'admin' ? 'var(--terracotta)' : 'var(--success)',
+              color: user?.role === 'admin'
+                ? 'var(--terracotta)'
+                : user?.role === 'cleaner'
+                ? 'var(--info)'
+                : 'var(--success)',
             }}>
-              {user?.role === 'admin' ? '⚡ Admin Portal' : '🏠 Client Portal'}
+              {user?.role === 'admin' ? '⚡ Admin Portal' : user?.role === 'cleaner' ? '🧹 Cleaner Portal' : '🏠 Client Portal'}
             </div>
           </div>
         </header>
 
-        {/* Content */}
         <main style={{ flex: 1, overflowY: 'auto', padding: '32px 28px' }}>
           {children}
         </main>
       </div>
 
-      {/* Responsive styles */}
       <style>{`
         @media (min-width: 768px) {
           .desktop-sidebar { display: flex !important; }

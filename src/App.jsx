@@ -9,6 +9,9 @@ import ClientDashboard from './pages/client/ClientDashboard';
 import MyProperties from './pages/client/MyProperties';
 import AdminDashboard from './pages/admin/Dashboard';
 import BookingsByDate from './pages/admin/BookingsByDate';
+import Cleaners from './pages/admin/Cleaners';
+import CleanerDashboard from './pages/cleaner/CleanerDashboard';
+import CleanerCalendar from './pages/cleaner/CleanerCalendar';
 
 const App = () => {
   return (
@@ -18,10 +21,10 @@ const App = () => {
           position="top-right"
           toastOptions={{
             style: {
-              fontFamily: 'DM Sans, sans-serif',
+              fontFamily: 'Outfit, sans-serif',
               fontSize: '14px',
               borderRadius: '12px',
-              border: '1px solid #E8E2D9',
+              border: '1px solid #E8DDD0',
             },
           }}
         />
@@ -50,6 +53,23 @@ const App = () => {
           <Route path="/admin/calendar" element={
             <ProtectedRoute allowedRoles={['admin']}>
               <Layout><BookingsByDate /></Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/cleaners" element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <Layout><Cleaners /></Layout>
+            </ProtectedRoute>
+          } />
+
+          {/* Cleaner routes */}
+          <Route path="/cleaner" element={
+            <ProtectedRoute allowedRoles={['cleaner']}>
+              <Layout><CleanerDashboard /></Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/cleaner/calendar" element={
+            <ProtectedRoute allowedRoles={['cleaner']}>
+              <Layout><CleanerCalendar /></Layout>
             </ProtectedRoute>
           } />
 
