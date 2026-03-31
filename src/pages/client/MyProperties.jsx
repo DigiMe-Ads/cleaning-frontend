@@ -322,7 +322,7 @@ const MyProperties = () => {
                       onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '8px' }}>
-                        <Badge status={booking.status}>{booking.status}</Badge>
+                        {/* <Badge status={booking.status}>{booking.status}</Badge> */}
                         <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
                           {/* Edit */}
                           <button
