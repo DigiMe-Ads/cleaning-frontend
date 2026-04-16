@@ -140,8 +140,7 @@ const AdminDashboard = () => {
 
   const stats = [
     { label: 'Total Properties', value: properties.length, icon: Building2, color: 'var(--info)', delay: 1 },
-    { label: 'Total Bookings', value: bookings.length, icon: CalendarCheck, color: 'var(--terracotta)', delay: 2 },
-    { label: 'Upcoming', value: upcoming.length, icon: Clock, color: 'var(--warning)', delay: 3 },
+    { label: 'Upcoming Cleanings', value: upcoming.length, icon: Clock, color: 'var(--warning)', delay: 3 },
     { label: overdueCount > 0 ? `${overdueCount} Overdue` : 'Completed', value: overdueCount > 0 ? overdueCount : bookings.filter(b => b.status === 'completed').length, icon: overdueCount > 0 ? AlertTriangle : CheckCircle, color: overdueCount > 0 ? 'var(--danger)' : 'var(--success)', delay: 4 },
   ];
 
