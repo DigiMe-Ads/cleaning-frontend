@@ -7,7 +7,6 @@ import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 
-// Group bookings by date then by property
 const groupByDateAndProperty = (bookings) => {
   const dateGroups = {};
   bookings.forEach(b => {
@@ -59,6 +58,22 @@ const CleaningPill = ({ status, dark = false }) => {
       <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'currentColor' }} />
       {s.replace('_', ' ')}
     </span>
+  );
+};
+
+const CleaningTimeBadge = ({ time, dark = false }) => {
+  if (!time) return null;
+  return (
+    <div style={{
+      display: 'inline-flex', alignItems: 'center', gap: '5px',
+      padding: '4px 10px', borderRadius: '8px',
+      background: dark ? 'rgba(212,168,83,0.18)' : 'rgba(212,168,83,0.1)',
+      border: `1px solid ${dark ? 'rgba(212,168,83,0.35)' : 'rgba(212,168,83,0.25)'}`,
+    }}>
+      <span style={{ fontSize: '11px' }}>🧹</span>
+      <span style={{ fontSize: '10px', fontWeight: '600', color: dark ? 'rgba(212,168,83,0.7)' : 'var(--gold)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Clean at</span>
+      <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--gold)' }}>{formatTime(time)}</span>
+    </div>
   );
 };
 
@@ -183,40 +198,109 @@ const ClientDashboard = () => {
             </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {todayBookings.sort((a, b) => a.checkout_time > b.checkout_time ? 1 : -1).map((booking) => {
-              const isDone = booking.cleaning_status === 'done';
-              const s = darkCsStyles[booking.cleaning_status || 'unassigned'];
-              return (
-                <div key={booking.id} style={{ padding: '14px 18px', background: isDone ? 'rgba(74,124,89,0.12)' : 'rgba(255,255,255,0.06)', borderRadius: '14px', border: `1px solid ${isDone ? 'rgba(74,124,89,0.25)' : 'rgba(255,255,255,0.08)'}` }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '10px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
-                      <div style={{ width: '36px', height: '36px', flexShrink: 0, background: isDone ? 'rgba(74,124,89,0.25)' : 'rgba(196,98,45,0.22)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${isDone ? 'rgba(74,124,89,0.35)' : 'rgba(232,146,74,0.25)'}` }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {todayBookings
+              .sort((a, b) => (a.cleaning_time || a.checkout_time) > (b.cleaning_time || b.checkout_time) ? 1 : -1)
+              .map((booking) => {
+                const isDone = booking.cleaning_status === 'done';
+                const darkStyle = darkCsStyles[booking.cleaning_status || 'unassigned'];
+                return (
+                  <div key={booking.id} style={{
+                    padding: '16px 18px',
+                    background: isDone ? 'rgba(74,124,89,0.12)' : 'rgba(255,255,255,0.06)',
+                    borderRadius: '14px',
+                    border: `1px solid ${isDone ? 'rgba(74,124,89,0.25)' : 'rgba(255,255,255,0.08)'}`,
+                  }}>
+                    {/* Property name + location */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                      <div style={{
+                        width: '36px', height: '36px', flexShrink: 0,
+                        background: isDone ? 'rgba(74,124,89,0.25)' : 'rgba(196,98,45,0.22)',
+                        borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        border: `1px solid ${isDone ? 'rgba(74,124,89,0.35)' : 'rgba(232,146,74,0.25)'}`,
+                      }}>
                         {isDone ? <CheckCircle size={16} color="#9FE1CB" /> : <Building2 size={16} color="var(--amber)" />}
                       </div>
-                      <div style={{ minWidth: 0 }}>
-                        <p style={{ fontSize: '14px', fontWeight: '500', color: isDone ? 'rgba(255,255,255,0.5)' : 'white', textDecoration: isDone ? 'line-through' : 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <p style={{
+                          fontSize: '14px', fontWeight: '600',
+                          color: isDone ? 'rgba(255,255,255,0.5)' : 'white',
+                          textDecoration: isDone ? 'line-through' : 'none',
+                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                        }}>
                           {booking.properties?.name}
                         </p>
-                        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', marginTop: '1px' }}>{booking.properties?.location}</p>
+                        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', marginTop: '1px' }}>
+                          {booking.properties?.location}
+                        </p>
                       </div>
                     </div>
-                    <p style={{ fontSize: '14px', fontWeight: '600', color: isDone ? '#9FE1CB' : 'var(--amber)', flexShrink: 0 }}>{formatTime(booking.checkout_time)}</p>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.07)', flexWrap: 'wrap' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <User size={11} color="rgba(255,255,255,0.45)" />
+
+                    {/* Time row: cleaning time + checkout time side by side */}
+                    <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+                      {/* Cleaning time */}
+                      <div style={{
+                        flex: 1, minWidth: '120px',
+                        padding: '8px 12px', borderRadius: '10px',
+                        background: booking.cleaning_time ? 'rgba(212,168,83,0.18)' : 'rgba(255,255,255,0.04)',
+                        border: `1px solid ${booking.cleaning_time ? 'rgba(212,168,83,0.35)' : 'rgba(255,255,255,0.08)'}`,
+                      }}>
+                        <p style={{ fontSize: '9px', fontWeight: '600', color: booking.cleaning_time ? 'rgba(212,168,83,0.65)' : 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '3px' }}>
+                          🧹 Clean at
+                        </p>
+                        <p style={{
+                          fontSize: '16px', fontWeight: '700',
+                          fontFamily: 'var(--font-display)', lineHeight: 1,
+                          color: booking.cleaning_time ? 'var(--gold)' : 'rgba(255,255,255,0.18)',
+                          fontStyle: booking.cleaning_time ? 'normal' : 'italic',
+                        }}>
+                          {booking.cleaning_time ? formatTime(booking.cleaning_time) : 'Not set'}
+                        </p>
                       </div>
-                      <p style={{ fontSize: '12px', color: booking.cleaners?.name ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.25)', fontStyle: booking.cleaners?.name ? 'normal' : 'italic' }}>
-                        {booking.cleaners?.name || 'No cleaner assigned'}
-                      </p>
+
+                      {/* Checkout time */}
+                      <div style={{
+                        flex: 1, minWidth: '120px',
+                        padding: '8px 12px', borderRadius: '10px',
+                        background: 'rgba(255,255,255,0.06)',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                      }}>
+                        <p style={{ fontSize: '9px', fontWeight: '600', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '3px' }}>
+                          🚪 Checkout
+                        </p>
+                        <p style={{
+                          fontSize: '16px', fontWeight: '700',
+                          fontFamily: 'var(--font-display)', lineHeight: 1,
+                          color: isDone ? 'rgba(255,255,255,0.25)' : 'var(--amber)',
+                        }}>
+                          {formatTime(booking.checkout_time)}
+                        </p>
+                      </div>
                     </div>
-                    <CleaningPill status={booking.cleaning_status} dark />
+
+                    {/* Bottom row: cleaner + status */}
+                    <div style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      gap: '8px', paddingTop: '10px',
+                      borderTop: '1px solid rgba(255,255,255,0.07)', flexWrap: 'wrap',
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <User size={11} color="rgba(255,255,255,0.45)" />
+                        </div>
+                        <p style={{
+                          fontSize: '12px',
+                          color: booking.cleaners?.name ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.25)',
+                          fontStyle: booking.cleaners?.name ? 'normal' : 'italic',
+                        }}>
+                          {booking.cleaners?.name || 'No cleaner assigned'}
+                        </p>
+                      </div>
+                      <CleaningPill status={booking.cleaning_status} dark />
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
           </div>
         </div>
       )}
@@ -255,14 +339,12 @@ const ClientDashboard = () => {
           return (
             <div key={date} style={{ borderTop: gi === 0 ? 'none' : '2px solid var(--warm-200)' }}>
 
-              {/* ── DATE HEADER ── */}
+              {/* Date header */}
               <div
                 onClick={() => multipleProps && toggleDate(date)}
                 style={{
                   padding: '12px 24px',
-                  background: isToday
-                    ? 'linear-gradient(135deg, rgba(196,98,45,0.08), rgba(232,146,74,0.04))'
-                    : 'var(--warm-100)',
+                  background: isToday ? 'linear-gradient(135deg, rgba(196,98,45,0.08), rgba(232,146,74,0.04))' : 'var(--warm-100)',
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   cursor: multipleProps ? 'pointer' : 'default',
                   borderLeft: isToday ? '3px solid var(--terracotta)' : '3px solid transparent',
@@ -271,15 +353,10 @@ const ClientDashboard = () => {
                 onMouseLeave={e => { e.currentTarget.style.filter = 'none'; }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                  <span style={{
-                    fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: '600',
-                    color: isToday ? 'var(--terracotta)' : 'var(--espresso)',
-                  }}>
+                  <span style={{ fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: '600', color: isToday ? 'var(--terracotta)' : 'var(--espresso)' }}>
                     {isToday ? 'Today' : format(new Date(date + 'T00:00:00'), 'EEEE, MMMM d')}
                   </span>
-                  <span style={{ fontSize: '12px', color: 'var(--warm-300)' }}>
-                    {format(new Date(date + 'T00:00:00'), 'yyyy')}
-                  </span>
+                  <span style={{ fontSize: '12px', color: 'var(--warm-300)' }}>{format(new Date(date + 'T00:00:00'), 'yyyy')}</span>
                   <span style={{ padding: '2px 8px', borderRadius: '99px', fontSize: '11px', fontWeight: '600', background: isToday ? 'rgba(196,98,45,0.12)' : 'var(--warm-200)', color: isToday ? 'var(--terracotta)' : 'var(--warm-500)' }}>
                     {totalOnDay} checkout{totalOnDay !== 1 ? 's' : ''}
                   </span>
@@ -289,15 +366,11 @@ const ClientDashboard = () => {
                     </span>
                   )}
                 </div>
-                {multipleProps && (
-                  isDateExpanded
-                    ? <ChevronUp size={16} color="var(--warm-300)" />
-                    : <ChevronDown size={16} color="var(--warm-300)" />
-                )}
+                {multipleProps && (isDateExpanded ? <ChevronUp size={16} color="var(--warm-300)" /> : <ChevronDown size={16} color="var(--warm-300)" />)}
               </div>
 
-              {/* ── PROPERTIES UNDER THIS DATE ── */}
-              {isDateExpanded && dateProps.map(({ property, bookings: propBookings }, pi) => {
+              {/* Properties under this date */}
+              {isDateExpanded && dateProps.map(({ property, bookings: propBookings }) => {
                 const propKey = `${date}-${property?.name}`;
                 const isPropExpanded = expandedProps[propKey] !== false;
                 const allDoneForProp = propBookings.every(b => b.cleaning_status === 'done');
@@ -309,8 +382,7 @@ const ClientDashboard = () => {
                     marginLeft: '24px',
                     borderLeft: `2px solid ${allDoneForProp ? 'var(--success)' : 'var(--warm-200)'}`,
                   }}>
-
-                    {/* Property header row */}
+                    {/* Property header */}
                     <div
                       onClick={() => hasMultipleBookings && toggleProp(propKey)}
                       style={{
@@ -325,22 +397,14 @@ const ClientDashboard = () => {
                       onMouseLeave={e => { e.currentTarget.style.background = allDoneForProp ? 'rgba(74,124,89,0.04)' : 'transparent'; }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
-                        {/* Property icon */}
                         <div style={{
                           width: '38px', height: '38px', flexShrink: 0,
-                          background: allDoneForProp
-                            ? 'rgba(74,124,89,0.1)'
-                            : 'linear-gradient(135deg, rgba(196,98,45,0.1), rgba(232,146,74,0.06))',
-                          borderRadius: '10px',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          background: allDoneForProp ? 'rgba(74,124,89,0.1)' : 'linear-gradient(135deg, rgba(196,98,45,0.1), rgba(232,146,74,0.06))',
+                          borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center',
                           border: `1px solid ${allDoneForProp ? 'rgba(74,124,89,0.2)' : 'rgba(196,98,45,0.15)'}`,
                         }}>
-                          {allDoneForProp
-                            ? <CheckCircle size={17} color="var(--success)" />
-                            : <Building2 size={17} color="var(--terracotta)" />
-                          }
+                          {allDoneForProp ? <CheckCircle size={17} color="var(--success)" /> : <Building2 size={17} color="var(--terracotta)" />}
                         </div>
-
                         <div style={{ minWidth: 0 }}>
                           <p style={{
                             fontSize: '14px', fontWeight: '600',
@@ -358,51 +422,61 @@ const ClientDashboard = () => {
                           </div>
                         </div>
                       </div>
-
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-                        {/* Booking count badge if multiple */}
                         {hasMultipleBookings && (
                           <span style={{ padding: '3px 8px', borderRadius: '99px', fontSize: '11px', fontWeight: '600', background: 'rgba(196,98,45,0.1)', color: 'var(--terracotta)', border: '1px solid rgba(196,98,45,0.15)' }}>
                             {propBookings.length} bookings
                           </span>
                         )}
-                        {hasMultipleBookings && (
-                          isPropExpanded
-                            ? <ChevronUp size={14} color="var(--warm-300)" />
-                            : <ChevronDown size={14} color="var(--warm-300)" />
-                        )}
+                        {hasMultipleBookings && (isPropExpanded ? <ChevronUp size={14} color="var(--warm-300)" /> : <ChevronDown size={14} color="var(--warm-300)" />)}
                       </div>
                     </div>
 
-                    {/* Booking rows under this property */}
+                    {/* Booking rows */}
                     {isPropExpanded && propBookings
-                      .sort((a, b) => a.checkout_time > b.checkout_time ? 1 : -1)
-                      .map((booking, bi) => {
+                      .sort((a, b) => (a.cleaning_time || a.checkout_time) > (b.cleaning_time || b.checkout_time) ? 1 : -1)
+                      .map((booking) => {
                         const isDone = booking.cleaning_status === 'done';
                         return (
                           <div key={booking.id} style={{
-                            padding: '10px 20px 10px 68px',
+                            padding: '12px 20px 12px 68px',
                             borderTop: '1px dashed var(--warm-100)',
                             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                             gap: '12px', flexWrap: 'wrap',
-                            background: isDone ? 'rgba(74,124,89,0.03)' : 'rgba(255,255,255,0.5)',
+                            background: isDone ? 'rgba(74,124,89,0.03)' : 'transparent',
                             transition: 'background 0.15s',
                           }}
                             onMouseEnter={e => e.currentTarget.style.background = 'var(--cream)'}
-                            onMouseLeave={e => e.currentTarget.style.background = isDone ? 'rgba(74,124,89,0.03)' : 'rgba(255,255,255,0.5)'}
+                            onMouseLeave={e => e.currentTarget.style.background = isDone ? 'rgba(74,124,89,0.03)' : 'transparent'}
                           >
-                            {/* Left: time + cleaner */}
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                            {/* Left side: times + cleaner */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                              {/* Cleaning time */}
+                              {booking.cleaning_time ? (
+                                <div style={{
+                                  display: 'inline-flex', alignItems: 'center', gap: '5px',
+                                  padding: '4px 10px', borderRadius: '8px',
+                                  background: 'rgba(212,168,83,0.1)',
+                                  border: '1px solid rgba(212,168,83,0.25)',
+                                }}>
+                                  <span style={{ fontSize: '11px' }}>🧹</span>
+                                  <span style={{ fontSize: '10px', fontWeight: '600', color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Clean</span>
+                                  <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--gold)' }}>{formatTime(booking.cleaning_time)}</span>
+                                </div>
+                              ) : null}
+
+                              {/* Checkout time */}
                               <div style={{
                                 padding: '4px 10px', borderRadius: '8px',
                                 background: isDone ? 'var(--success-light)' : 'var(--warm-100)',
                                 border: `1px solid ${isDone ? 'rgba(74,124,89,0.2)' : 'var(--warm-200)'}`,
                               }}>
                                 <p style={{ fontSize: '12px', fontWeight: '600', color: isDone ? 'var(--success)' : 'var(--espresso)' }}>
-                                  {formatTime(booking.checkout_time)}
+                                  🚪 {formatTime(booking.checkout_time)}
                                 </p>
                               </div>
 
+                              {/* Cleaner */}
                               {booking.cleaners?.name ? (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                                   <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'var(--info-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(45,106,143,0.2)', flexShrink: 0 }}>
@@ -411,7 +485,7 @@ const ClientDashboard = () => {
                                   <span style={{ fontSize: '12px', color: 'var(--warm-400)' }}>{booking.cleaners.name}</span>
                                 </div>
                               ) : (
-                                <span style={{ fontSize: '12px', color: 'var(--warm-300)', fontStyle: 'italic' }}>No cleaner assigned</span>
+                                <span style={{ fontSize: '12px', color: 'var(--warm-300)', fontStyle: 'italic' }}>No cleaner</span>
                               )}
                             </div>
 
