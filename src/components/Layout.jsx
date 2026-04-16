@@ -75,7 +75,7 @@ const Layout = ({ children }) => {
           color: 'rgba(255,255,255,0.25)',
           padding: '0 10px', marginBottom: '6px',
         }}>
-          {user?.role === 'admin' ? 'Management' : user?.role === 'cleaner' ? 'My Work' : 'My Portal'}
+          {user?.role === 'admin' ? '' : user?.role === 'cleaner' ? 'My Work' : 'My Portal'}
         </p>
         {links.map(({ to, label, icon: Icon }) => (
           <NavLink
