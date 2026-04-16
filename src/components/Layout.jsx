@@ -12,10 +12,11 @@ const Layout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const adminLinks = [
-    { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-    { to: '/admin/calendar', label: 'Calendar', icon: CalendarDays },
-    { to: '/admin/cleaners', label: 'Cleaners', icon: Users },
-  ];
+  { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/admin/calendar', label: 'Calendar', icon: CalendarDays },
+  { to: '/admin/properties', label: 'Properties', icon: Building2 },
+  { to: '/admin/cleaners', label: 'Cleaners', icon: Users },
+];
 
   const clientLinks = [
     { to: '/client', label: 'Overview', icon: LayoutDashboard },

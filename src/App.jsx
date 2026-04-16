@@ -12,6 +12,7 @@ import BookingsByDate from './pages/admin/BookingsByDate';
 import Cleaners from './pages/admin/Cleaners';
 import CleanerDashboard from './pages/cleaner/CleanerDashboard';
 import CleanerCalendar from './pages/cleaner/CleanerCalendar';
+import AdminProperties from './pages/admin/AdminProperties';
 
 const App = () => {
   return (
@@ -58,6 +59,11 @@ const App = () => {
           <Route path="/admin/cleaners" element={
             <ProtectedRoute allowedRoles={['admin']}>
               <Layout><Cleaners /></Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/properties" element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <Layout><AdminProperties /></Layout>
             </ProtectedRoute>
           } />
 
