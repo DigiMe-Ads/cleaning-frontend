@@ -60,7 +60,7 @@ const Layout = ({ children }) => {
               letterSpacing: '-0.3px',
             }}>CleanSync</p>
             <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '0.05em' }}>
-              PROPERTY MANAGEMENT
+              EXCLUSIVE CLEANING SERVICES
             </p>
           </div>
         </div>

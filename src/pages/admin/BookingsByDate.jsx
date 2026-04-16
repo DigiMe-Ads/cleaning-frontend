@@ -4,7 +4,7 @@ import Badge from '../../components/ui/Badge';
 import { formatTime } from '../../utils/helpers';
 import {
   format, startOfMonth, endOfMonth, eachDayOfInterval,
-  isSameDay, isToday, isSameMonth, addMonths, subMonths,
+  isSameDay, isToday, addMonths, subMonths,
 } from 'date-fns';
 import { ChevronLeft, ChevronRight, MapPin, Clock, User, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -17,7 +17,6 @@ const BookingsByDate = () => {
   const [loadingAll, setLoadingAll] = useState(true);
   const [loadingDay, setLoadingDay] = useState(false);
 
-  // Load all bookings once to show dots on calendar
   useEffect(() => {
     const fetchAll = async () => {
       try {
@@ -58,12 +57,17 @@ const BookingsByDate = () => {
 
   const startDay = startOfMonth(currentMonth).getDay();
 
-  const statusColors = {
-    pending: '#C4862D',
-    confirmed: '#2D6A8F',
-    completed: '#4A7C59',
-    cancelled: '#B03A2E',
+  const cleaningDotColor = (booking) => {
+    if (booking.status === 'cancelled') return '#B03A2E';
+    if (booking.cleaning_status === 'done') return '#4A7C59';
+    return '#C4862D';
   };
+
+  const legendItems = [
+    { label: 'Cleaning pending', color: '#C4862D' },
+    { label: 'Cleaning done', color: '#4A7C59' },
+    { label: 'Cleaning cancelled', color: '#B03A2E' },
+  ];
 
   return (
     <div>
@@ -75,9 +79,6 @@ const BookingsByDate = () => {
         <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(28px, 3vw, 40px)', fontWeight: '600', color: 'var(--espresso)', lineHeight: 1.1 }}>
           Checkout Calendar
         </h1>
-        <p style={{ fontSize: '14px', color: 'var(--warm-400)', marginTop: '6px' }}>
-          Dots on each day show scheduled checkouts. Click any day for details.
-        </p>
       </div>
 
       <div style={{
@@ -89,24 +90,16 @@ const BookingsByDate = () => {
 
         {/* Calendar */}
         <div className="animate-fadeUp stagger-1" style={{
-          background: 'var(--ivory)',
-          borderRadius: '24px',
-          border: '1px solid var(--warm-100)',
-          boxShadow: 'var(--shadow-md)',
-          overflow: 'hidden',
+          background: 'var(--ivory)', borderRadius: '24px',
+          border: '1px solid var(--warm-100)', boxShadow: 'var(--shadow-md)', overflow: 'hidden',
         }}>
           {/* Calendar header */}
           <div style={{
-            padding: '24px 28px 20px',
-            borderBottom: '1px solid var(--warm-100)',
+            padding: '24px 28px 20px', borderBottom: '1px solid var(--warm-100)',
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           }}>
             <div>
-              <h2 style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: '26px', fontWeight: '600',
-                color: 'var(--espresso)',
-              }}>
+              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '26px', fontWeight: '600', color: 'var(--espresso)' }}>
                 {format(currentMonth, 'MMMM')}
               </h2>
               <p style={{ fontSize: '14px', color: 'var(--warm-300)', marginTop: '2px' }}>
@@ -114,55 +107,32 @@ const BookingsByDate = () => {
               </p>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
-              <button
-                onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-                style={{
-                  width: '36px', height: '36px',
-                  borderRadius: '10px',
-                  border: '1px solid var(--warm-200)',
-                  background: 'var(--warm-100)',
-                  cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'var(--espresso)',
-                  transition: 'all 0.15s',
+              {[
+                { icon: ChevronLeft, action: () => setCurrentMonth(subMonths(currentMonth, 1)) },
+                { icon: ChevronRight, action: () => setCurrentMonth(addMonths(currentMonth, 1)) },
+              ].map(({ icon: Icon, action }, i) => (
+                <button key={i} onClick={action} style={{
+                  width: '36px', height: '36px', borderRadius: '10px',
+                  border: '1px solid var(--warm-200)', background: 'var(--warm-100)',
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: 'var(--espresso)', transition: 'all 0.15s',
                 }}
-                onMouseEnter={e => e.currentTarget.style.background = 'var(--warm-200)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'var(--warm-100)'}
-              >
-                <ChevronLeft size={17} />
-              </button>
-              <button
-                onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-                style={{
-                  width: '36px', height: '36px',
-                  borderRadius: '10px',
-                  border: '1px solid var(--warm-200)',
-                  background: 'var(--warm-100)',
-                  cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'var(--espresso)',
-                  transition: 'all 0.15s',
-                }}
-                onMouseEnter={e => e.currentTarget.style.background = 'var(--warm-200)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'var(--warm-100)'}
-              >
-                <ChevronRight size={17} />
-              </button>
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--warm-200)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'var(--warm-100)'}
+                >
+                  <Icon size={17} />
+                </button>
+              ))}
             </div>
           </div>
 
           {/* Day names */}
-          <div style={{
-            display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)',
-            padding: '16px 20px 8px',
-          }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', padding: '16px 20px 8px' }}>
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
               <div key={d} style={{
-                textAlign: 'center',
-                fontSize: '11px', fontWeight: '600',
+                textAlign: 'center', fontSize: '11px', fontWeight: '600',
                 letterSpacing: '0.05em', textTransform: 'uppercase',
-                color: 'var(--warm-300)',
-                padding: '4px 0',
+                color: 'var(--warm-300)', padding: '4px 0',
               }}>{d}</div>
             ))}
           </div>
@@ -170,12 +140,9 @@ const BookingsByDate = () => {
           {/* Days grid */}
           <div style={{
             display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)',
-            padding: '4px 20px 24px',
-            gap: '4px',
+            padding: '4px 20px 24px', gap: '4px',
           }}>
-            {Array.from({ length: startDay }).map((_, i) => (
-              <div key={`e-${i}`} />
-            ))}
+            {Array.from({ length: startDay }).map((_, i) => <div key={`e-${i}`} />)}
 
             {days.map((day) => {
               const dayBookings = getBookingsForDay(day);
@@ -191,25 +158,16 @@ const BookingsByDate = () => {
                     position: 'relative',
                     display: 'flex', flexDirection: 'column',
                     alignItems: 'center', justifyContent: 'flex-start',
-                    padding: '8px 4px 6px',
-                    borderRadius: '12px',
+                    padding: '8px 4px 6px', borderRadius: '12px',
                     border: isSelected
                       ? '2px solid var(--terracotta)'
-                      : today
-                      ? '2px solid var(--warm-200)'
-                      : '2px solid transparent',
+                      : today ? '2px solid var(--warm-200)' : '2px solid transparent',
                     background: isSelected
                       ? 'linear-gradient(135deg, rgba(196,98,45,0.12), rgba(232,146,74,0.06))'
-                      : today
-                      ? 'var(--warm-100)'
-                      : 'transparent',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s',
-                    minHeight: '60px',
+                      : today ? 'var(--warm-100)' : 'transparent',
+                    cursor: 'pointer', transition: 'all 0.15s', minHeight: '60px',
                   }}
-                  onMouseEnter={e => {
-                    if (!isSelected) e.currentTarget.style.background = 'var(--warm-100)';
-                  }}
+                  onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = 'var(--warm-100)'; }}
                   onMouseLeave={e => {
                     if (!isSelected && !today) e.currentTarget.style.background = 'transparent';
                     else if (today && !isSelected) e.currentTarget.style.background = 'var(--warm-100)';
@@ -218,42 +176,25 @@ const BookingsByDate = () => {
                   <span style={{
                     fontSize: '14px',
                     fontWeight: isSelected || today ? '600' : '400',
-                    color: isSelected
-                      ? 'var(--terracotta)'
-                      : today
-                      ? 'var(--espresso)'
-                      : 'var(--espresso)',
+                    color: isSelected ? 'var(--terracotta)' : 'var(--espresso)',
                     lineHeight: 1,
                   }}>
                     {format(day, 'd')}
                   </span>
 
-                  {/* Today indicator */}
-                  {today && (
-                    <span style={{
-                      width: '10px', height: '10px',
-                      borderRadius: '50%',
-                      background: 'var(--terracotta)',
-                      marginTop: '3px',
-                    }} />
-                  )}
-
-                  {/* Booking dots */}
+                  {/* Booking dots — 3 states only */}
                   {hasBookings && (
                     <div style={{
                       display: 'flex', gap: '2px', flexWrap: 'wrap',
-                      justifyContent: 'center',
-                      marginTop: today ? '2px' : '5px',
-                      maxWidth: '100%',
+                      justifyContent: 'center', marginTop: '5px', maxWidth: '100%',
                     }}>
                       {dayBookings.slice(0, 4).map((b, i) => (
                         <span
                           key={i}
-                          title={`${b.properties?.name} — ${b.status}`}
+                          title={`${b.properties?.name}`}
                           style={{
-                            width: '6px', height: '6px',
-                            borderRadius: '50%',
-                            background: statusColors[b.status] || 'var(--warm-300)',
+                            width: '6px', height: '6px', borderRadius: '50%',
+                            background: cleaningDotColor(b),
                             flexShrink: 0,
                             animation: 'pulse-dot 2s ease infinite',
                             animationDelay: `${i * 0.3}s`,
@@ -263,8 +204,7 @@ const BookingsByDate = () => {
                       {dayBookings.length > 4 && (
                         <span style={{
                           fontSize: '8px', fontWeight: '700',
-                          color: 'var(--warm-400)', lineHeight: 1,
-                          alignSelf: 'center',
+                          color: 'var(--warm-400)', lineHeight: 1, alignSelf: 'center',
                         }}>+{dayBookings.length - 4}</span>
                       )}
                     </div>
@@ -276,17 +216,16 @@ const BookingsByDate = () => {
 
           {/* Legend */}
           <div style={{
-            padding: '16px 28px',
-            borderTop: '1px solid var(--warm-100)',
-            display: 'flex', gap: '16px', flexWrap: 'wrap',
+            padding: '16px 28px', borderTop: '1px solid var(--warm-100)',
+            display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center',
           }}>
             <p style={{ fontSize: '11px', fontWeight: '600', color: 'var(--warm-300)', letterSpacing: '0.05em', textTransform: 'uppercase', marginRight: '4px' }}>
               Status:
             </p>
-            {Object.entries(statusColors).map(([status, color]) => (
-              <div key={status} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            {legendItems.map(({ label, color }) => (
+              <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                 <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: color, flexShrink: 0 }} />
-                <span style={{ fontSize: '11px', color: 'var(--warm-400)', textTransform: 'capitalize' }}>{status}</span>
+                <span style={{ fontSize: '11px', color: 'var(--warm-400)' }}>{label}</span>
               </div>
             ))}
           </div>
@@ -295,17 +234,12 @@ const BookingsByDate = () => {
         {/* Day detail panel */}
         {selectedDate && (
           <div className="animate-scaleIn" style={{
-            background: 'var(--ivory)',
-            borderRadius: '24px',
-            border: '1px solid var(--warm-100)',
-            boxShadow: 'var(--shadow-md)',
-            overflow: 'hidden',
-            position: 'sticky',
-            top: '20px',
+            background: 'var(--ivory)', borderRadius: '24px',
+            border: '1px solid var(--warm-100)', boxShadow: 'var(--shadow-md)',
+            overflow: 'hidden', position: 'sticky', top: '20px',
           }}>
             <div style={{
-              padding: '20px 20px 16px',
-              borderBottom: '1px solid var(--warm-100)',
+              padding: '20px 20px 16px', borderBottom: '1px solid var(--warm-100)',
               background: 'linear-gradient(135deg, rgba(196,98,45,0.06), rgba(232,146,74,0.03))',
             }}>
               <p style={{ fontSize: '11px', fontWeight: '600', letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--terracotta)', marginBottom: '4px' }}>
@@ -334,20 +268,38 @@ const BookingsByDate = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {selectedBookings.map((booking) => (
                     <div key={booking.id} style={{
-                      background: 'var(--cream)',
-                      borderRadius: '14px',
-                      border: '1px solid var(--warm-100)',
-                      padding: '14px',
-                      transition: 'all 0.15s',
+                      background: 'var(--cream)', borderRadius: '14px',
+                      border: '1px solid var(--warm-100)', padding: '14px', transition: 'all 0.15s',
                     }}
                       onMouseEnter={e => e.currentTarget.style.boxShadow = 'var(--shadow-sm)'}
                       onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
                     >
-                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '10px' }}>
+                      {/* Property name + status pill */}
+                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '10px', gap: '8px' }}>
                         <p style={{ fontSize: '14px', fontWeight: '600', color: 'var(--espresso)' }}>
                           {booking.properties?.name}
                         </p>
-                        <Badge status={booking.status}>{booking.status}</Badge>
+                        <span style={{
+                          display: 'inline-flex', alignItems: 'center', gap: '5px',
+                          padding: '4px 10px', borderRadius: '99px',
+                          fontSize: '11px', fontWeight: '600', whiteSpace: 'nowrap', flexShrink: 0,
+                          background: booking.status === 'cancelled'
+                            ? '#FDEEEC' : booking.cleaning_status === 'done'
+                            ? '#EAF2EC' : '#FDF3E3',
+                          color: booking.status === 'cancelled'
+                            ? '#B03A2E' : booking.cleaning_status === 'done'
+                            ? '#4A7C59' : '#C4862D',
+                          border: `1px solid ${booking.status === 'cancelled'
+                            ? 'rgba(176,58,46,0.25)' : booking.cleaning_status === 'done'
+                            ? 'rgba(74,124,89,0.25)' : 'rgba(196,134,45,0.25)'}`,
+                        }}>
+                          <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'currentColor' }} />
+                          {booking.status === 'cancelled'
+                            ? 'Cancelled'
+                            : booking.cleaning_status === 'done'
+                            ? 'Done'
+                            : 'Pending'}
+                        </span>
                       </div>
 
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
@@ -361,9 +313,19 @@ const BookingsByDate = () => {
                             Checkout: {formatTime(booking.checkout_time)}
                           </span>
                         </div>
+                        {booking.cleaning_time && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{ fontSize: '12px' }}>🧹</span>
+                            <span style={{ fontSize: '12px', color: 'var(--gold)', fontWeight: '600' }}>
+                              Clean at: {formatTime(booking.cleaning_time)}
+                            </span>
+                          </div>
+                        )}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <User size={12} color="var(--warm-300)" />
-                          <span style={{ fontSize: '12px', color: 'var(--warm-400)' }}>{booking.users?.name}</span>
+                          <span style={{ fontSize: '12px', color: 'var(--warm-400)' }}>
+                            {booking.cleaners?.name || 'No cleaner assigned'}
+                          </span>
                         </div>
                         {booking.notes && (
                           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', marginTop: '2px' }}>
@@ -385,6 +347,10 @@ const BookingsByDate = () => {
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse-dot {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.3); opacity: 0.8; }
+        }
         @media (max-width: 767px) {
           .calendar-grid { grid-template-columns: 1fr !important; }
         }

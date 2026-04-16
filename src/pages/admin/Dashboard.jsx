@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { bookingsAPI, propertiesAPI, usersAPI } from '../../services/api';
 import Badge from '../../components/ui/Badge';
 import { formatDate, formatTime } from '../../utils/helpers';
-import { Building2, CalendarCheck, Clock, CheckCircle, Trash2, ArrowRight, AlertTriangle } from 'lucide-react';
+import { Building2, CalendarCheck, Clock, CheckCircle, Trash2, ArrowRight, AlertTriangle, House } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { format, isPast } from 'date-fns';
@@ -139,7 +139,7 @@ const AdminDashboard = () => {
   });
 
   const stats = [
-    { label: 'Total Properties', value: properties.length, icon: Building2, color: 'var(--info)', delay: 1 },
+    { label: 'Total Properties', value: properties.length, icon: House, color: 'var(--info)', delay: 1 },
     { label: 'Upcoming Cleanings', value: upcoming.length, icon: Clock, color: 'var(--warning)', delay: 3 },
     { label: overdueCount > 0 ? `${overdueCount} Overdue` : 'Completed', value: overdueCount > 0 ? overdueCount : bookings.filter(b => b.status === 'completed').length, icon: overdueCount > 0 ? AlertTriangle : CheckCircle, color: overdueCount > 0 ? 'var(--danger)' : 'var(--success)', delay: 4 },
   ];
@@ -161,7 +161,7 @@ const AdminDashboard = () => {
           Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening'},{' '}
           <span style={{ fontStyle: 'italic' }}>{user?.name?.split(' ')[0]}</span>
         </h1>
-        <p style={{ fontSize: '14px', color: 'var(--warm-400)', marginTop: '6px' }}>Here's what's happening across all properties today.</p>
+        <p style={{ fontSize: '14px', color: 'var(--warm-400)', marginTop: '6px' }}>Here's an overview of the cleaning schedule today.</p>
       </div>
 
       {/* Overdue alert */}
@@ -243,7 +243,7 @@ const AdminDashboard = () => {
         <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--warm-100)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
           <div>
             <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: '600', color: 'var(--espresso)' }}>All Bookings</h2>
-            <p style={{ fontSize: '13px', color: 'var(--warm-400)', marginTop: '2px' }}>Sorted by next upcoming — overdue shown first</p>
+            <p style={{ fontSize: '13px', color: 'var(--warm-400)', marginTop: '2px' }}>Sorted by next upcoming</p>
           </div>
           <button onClick={() => navigate('/admin/calendar')}
             style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '9px 16px', background: 'var(--warm-100)', border: '1px solid var(--warm-200)', borderRadius: '10px', fontSize: '13px', fontWeight: '500', color: 'var(--espresso)', cursor: 'pointer', transition: 'all 0.2s' }}
